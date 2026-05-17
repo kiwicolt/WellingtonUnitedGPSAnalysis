@@ -12,8 +12,8 @@
   --navy2:  #0e1530;
   --navy3:  #151d3a;
   --navy4:  #1e2a55;
-  --muted:  #3a4f8a;
-  --dim:    #252f52;
+  --muted:  #7a90c4;
+  --dim:    #5a6fa8;
   --text:   #c8d4f0;
   --white:  #ffffff;
   --orange: #E8541A;
@@ -534,9 +534,118 @@ footer {
   display: block;
 }
 
+
+/* ── PASSWORD GATE ── */
+#pw-gate {
+  position: fixed;
+  inset: 0;
+  background: #07091a;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Barlow', system-ui, sans-serif;
+}
+#pw-box {
+  background: #0e1530;
+  border: 1px solid #1e2a55;
+  border-radius: 16px;
+  padding: 48px 40px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+}
+#pw-logo {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #7a90c4;
+  margin-bottom: 6px;
+}
+#pw-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 28px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -.3px;
+  margin-bottom: 4px;
+}
+#pw-title span { color: #E8541A; }
+#pw-sub {
+  font-size: 13px;
+  color: #7a90c4;
+  margin-bottom: 32px;
+}
+#pw-input {
+  width: 100%;
+  background: #07091a;
+  border: 1px solid #1e2a55;
+  border-radius: 8px;
+  padding: 13px 16px;
+  font-size: 15px;
+  font-family: 'Barlow', system-ui, sans-serif;
+  color: #c8d4f0;
+  outline: none;
+  text-align: center;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  transition: border-color .2s;
+}
+#pw-input:focus { border-color: #E8541A; }
+#pw-input.error { border-color: #e85454; animation: shake .3s; }
+#pw-btn {
+  width: 100%;
+  background: #E8541A;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 16px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background .2s;
+}
+#pw-btn:hover { background: #c94510; }
+#pw-err {
+  font-size: 12px;
+  color: #e85454;
+  margin-top: 12px;
+  min-height: 18px;
+}
+#pw-note {
+  font-size: 11px;
+  color: #5a6fa8;
+  margin-top: 24px;
+  line-height: 1.6;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-6px)}
+  75%{transform:translateX(6px)}
+}
+
 </style>
 </head>
 <body>
+
+<!-- PASSWORD GATE -->
+<div id="pw-gate">
+  <div id="pw-box">
+    <div id="pw-logo">Wellington United Diamonds</div>
+    <div id="pw-title">GPS <span>Report</span></div>
+    <div id="pw-sub">Women's Central League 2026 &nbsp;·&nbsp; Coaching Staff</div>
+    <input id="pw-input" type="password" placeholder="Enter password" autocomplete="off" />
+    <button id="pw-btn" onclick="checkPw()">Access Report</button>
+    <div id="pw-err"></div>
+    <div id="pw-note">This report contains GPS performance data.<br>For authorised coaching staff only.</div>
+  </div>
+</div>
+
 
 <!-- NAV -->
 <nav>
@@ -1155,5 +1264,43 @@ document.querySelectorAll('[id]').forEach(el => {
   if (['overview','methodology','season','games','players'].includes(el.id)) observer.observe(el);
 });
 </script>
+
+<script>
+// ── PASSWORD GATE ─────────────────────────────────────────────────────────
+(function() {
+  // Check if already authenticated this session
+  if (sessionStorage.getItem('wu_auth') === '1') {
+    document.getElementById('pw-gate').style.display = 'none';
+    return;
+  }
+  // Prevent body scroll while gate is showing
+  document.body.style.overflow = 'hidden';
+})();
+
+function checkPw() {
+  const input = document.getElementById('pw-input');
+  const err = document.getElementById('pw-err');
+  // Simple hash check — password is: diamonds2026
+  const hash = Array.from(input.value).reduce((h, c) => (Math.imul(31, h) + c.charCodeAt(0)) | 0, 0);
+  const correctHash = Array.from('diamonds2026').reduce((h, c) => (Math.imul(31, h) + c.charCodeAt(0)) | 0, 0);
+  if (hash === correctHash) {
+    sessionStorage.setItem('wu_auth', '1');
+    document.getElementById('pw-gate').style.display = 'none';
+    document.body.style.overflow = '';
+  } else {
+    err.textContent = 'Incorrect password. Please try again.';
+    input.classList.add('error');
+    input.value = '';
+    setTimeout(() => input.classList.remove('error'), 400);
+    input.focus();
+  }
+}
+
+// Allow Enter key to submit
+document.getElementById('pw-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPw();
+});
+</script>
+
 </body>
 </html>
